@@ -5,6 +5,7 @@ from tkinter import messagebox
 import calendar
 from datetime import datetime
 import pickle
+from abc import ABC, abstractmethod
 
 pages = ["Day", "Week", "Month"]
    
@@ -42,7 +43,6 @@ class Planner(tk.Tk):
         Button(self,text = "Day", width = 3, borderwidth = 0, highlightthickness = 0, command=self.call_day).place(x = 340, y = 5)
         Button(self,text = "Week", width = 3, borderwidth = 0, highlightthickness = 0).place(x = 410, y = 5)
         Button(self,text = "Month", width = 3, borderwidth = 0, highlightthickness = 0).place(x = 480, y = 5)
-        
         Button(self, text = "<", width = 1, borderwidth = 0, highlightthickness = 0).place(x = 630, y = 20)
         Button(self, text = "Today", width = 3, borderwidth = 0, highlightthickness = 0).place(x = 670, y = 20)
         Button(self, text = ">", width = 1, borderwidth = 0, highlightthickness = 0).place(x = 730, y = 20)
@@ -60,11 +60,27 @@ class Planner(tk.Tk):
         self.dayframe = Day(self)  # Create Day frame   
         global current_page
         current_page = "Day"
+
+class PlannerView(tk.Frame, ABC): 
+    def __init__(self, master):
+        super().__init__(master)
+        self.place(x = 0, y = 100, width = 785, height = 490) #set up frame with specific location
+    
+    @abstractmethod
+    def display(self): 
+        pass
+    
+    @abstractmethod
+    def save_data(self): 
+        pass
         
-class Day(tk.Frame): 
+class Day(PlannerView): 
     def __init__(self, master): 
         super().__init__(master)
-        self.place(x = 0, y = 100, width = 785, height = 490) #set up frame iwht specific location 
+        # self.place(x = 0, y = 100, width = 785, height = 490) #set up frame iwht specific location 
+        self.display()
+        
+    def display(self):
         tableframe = tk.Frame(self, bg="grey")
         tableframe.place(x = 0, y = 10, width = 445, height = 900)
         
@@ -193,7 +209,79 @@ class Day(tk.Frame):
         return loaded_data
         
 #help : add class file handling 
-
+class FileHandling: 
+    def load_data(self, filename):
+        file = open(filename, 'rb')
+        data = pickle.load(file)
+        file.close()
+        return data
+        
+    def save_data(self, filename, category, notify_result, start_t, end_t, note, location): 
+        self.start = float(self.start_t[:len(start_t)-2])
+        self.end = float(self.end_t[:len(end_t)-2])
+        category_list.append(category)
+        data = {
+            'Year': current_year,
+            'Month': current_month,
+            'Day' : [
+                {
+                    'Date': current_date,
+                    'Day_of_week' : current_day,
+                    'Time_slot' : [
+                        {
+                            '1' : {
+                                'note' : self.note.get(), 
+                                'category' : self.category_result,
+                                'location' : self.location.get(),
+                                'start' : self.start_t,
+                                'end' : self.end_t,
+                                'notify_me' : self.notify_result
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+        
+        with open(filename, 'wb') as file: 
+            pickle.dump(data, file)
+            
+        loaded_data = self.load_data(filename)
+        if loaded_data['Year'] == current_year and loaded_data['Month'] == current_month:
+            for i, n in enumerate(loaded_data['Day']):
+                if n['Date'] == str(current_date):
+                    id = len(n['Time_slot']) + 1
+                    n['Time_slot'].append({str(id) : {
+                                    'note' : self.note.get(), 
+                                    'category' : self.category_result,
+                                    'location' : self.location.get(),
+                                    'start' : self.start_t,
+                                    'end' : self.end_t,
+                                    'notify_me' : self.notify_result
+                                }})
+                    print("Success1")
+                elif i == len(loaded_data['Day']) - 1: 
+                    id = 1
+                    loaded_data['Day'].append({'Date': current_date,
+                        'Day_of_week' : current_day,
+                        'Time_slot' : [
+                            {
+                                str(id) : {
+                                    'note' : self.note.get(), 
+                                    'category' : self.category_result,
+                                    'location' : self.location.get(),
+                                    'start' : self.start_t,
+                                    'end' : self.end_t,
+                                    'notify_me' : self.notify_result
+                                }
+                            }
+                        ]})
+                    print("Success2")
+        else: 
+            print(data)
+            loaded_data.append(data)
+            print("Success3")
+        
 class Collapsible_list: 
     def create(self, frame, width, datalist, row=None, column=None, x=None, y=None, canType = False):
         data = tk.StringVar()
