@@ -49,10 +49,10 @@ class PlannerView(tk.Frame, ABC):
         super().__init__(master)
         self.place(x = 0, y = 100, width = 785, height = 490) #set up frame with specific location
         self.file_handler = FileHandling()
-        # self.file_handler.initialize()
+        # self.file_handler.initialize() #add default data to file for first time
     
     @abstractmethod
-    def display(self): 
+    def initialize_ui(self): 
         pass
     
     @abstractmethod
@@ -62,45 +62,46 @@ class PlannerView(tk.Frame, ABC):
 class Day(PlannerView):
     def __init__(self, master):
         super().__init__(master)
-        # self.place(x = 0, y = 100, width = 785, height = 490) #set up frame iwht specific location 
-        self.display()
+        self.initialize_ui()
 
-    def display(self):
-        #problem table : ipdate every time save date
-        leftframe = tk.Frame(self, bg="#D9D9D9")
-        leftframe.place(x = 10, y = 10, width = 460, height = 900)
-        columns = ('Time', 'Note')#note@time
-        tree = ttk.Treeview(leftframe, columns=columns, show = "headings")
-        tree.column(0,anchor=tk.CENTER, stretch=tk.NO, width=200)
-        tree.heading("Time", text="Time")
-        tree.column(1,anchor=tk.CENTER, stretch=tk.NO)
-        tree.heading("Note", text="Note")
+    def initialize_ui(self): 
+        self.setup_table_frame()
+        self.setup_input_frame()
         
-        self.update_table(10, "November", 2023, tree)
-        tasks = self.file_handler.get_day_tasks(10, "November", 2023)
-        count = 0
-        if tasks != None: 
-            for task in tasks:
-                count += 1
-                tree.insert('', tk.END, values=(task[str(count)]['start'] + " - " + task[str(count)]['end'], task[str(count)]['note'] + "@" + task[str(count)]['location']))
+    def setup_table_frame(self):
+        self.leftframe = tk.Frame(self, bg="#D9D9D9")
+        self.leftframe.place(x = 10, y = 10, width = 460, height = 900)
+        columns = ('Time', 'Note')#note@time
+        self.tree = ttk.Treeview(self.leftframe, columns=columns, show = "headings")
+        
+        #problem: table heading not change width 
+        self.tree.column(0,anchor='center', stretch=tk.NO, width=200)
+        self.tree.heading("Time", text="Time")
+        self.tree.column(1,anchor='center', stretch=tk.NO)
+        self.tree.heading("Note", text="Note")
+        
+        tasks = self.file_handler.get_day_tasks(11, "November", 2023)
+        if tasks != None:
+            for i in range(len(tasks)):
+                self.add_row_table(11, "November", 2023, self.tree, i)
             
-        #adjust here 
-        tree.bind('<<TreeviewSelect>>', self.item_selected)
-        tree.grid(row=0, column=0, sticky='nsew')
+        self.tree.bind('<<TreeviewSelect>>', self.item_selected)
+        self.tree.grid(row=0, column=0, sticky='nsew')
         # add a scrollbar
-        scrollbar = ttk.Scrollbar(leftframe, orient=tk.VERTICAL, command= tree.yview)
-        tree.configure(yscroll=scrollbar.set)
+        scrollbar = ttk.Scrollbar(self.leftframe, orient=tk.VERTICAL, command= self.tree.yview)
+        self.tree.configure(yscroll=scrollbar.set)
         scrollbar.grid(row=0, column=1, sticky='ns')
         
+    def setup_input_frame(self): 
         #input frame
-        rightframe = tk.Frame(self, bg="#D9D9D9")
-        rightframe.place(x = 444, y = 10, width = 340, height = 900)
-        Button(rightframe, text="add", font = ("Arial", 15), width = 5, height = 2, borderwidth=0, highlightthickness=0, pady = 0, background="#ABBBF0").place(x = 20, y = 20)
-        inputframe = tk.Frame(rightframe, bg="#ABBBF0")
+        self.rightframe = tk.Frame(self, bg="#D9D9D9")
+        self.rightframe.place(x = 444, y = 10, width = 340, height = 900)
+        Button(self.rightframe, text="add", font = ("Arial", 15), width = 5, height = 2, borderwidth=0, highlightthickness=0, pady = 0, background="#ABBBF0").place(x = 20, y = 20)
+        inputframe = tk.Frame(self.rightframe, bg="#ABBBF0")
         inputframe.place(x = 20, y = 50, width = 300, height = 260)
         
         Label(inputframe, text = "Note", font = ("Arial", 15)).place(x = 0, y = 12)
-        self.note = tk.Entry(inputframe, borderwidth = 1) #20 15 15
+        self.note = tk.Entry(inputframe, borderwidth = 1) 
         self.note.place(x = 90, y = 10)
         
         Label(inputframe, text = "Category", font = ("Arial", 15)).place(x = 0, y = 42)
@@ -118,16 +119,27 @@ class Day(PlannerView):
         self.notify = Collapsible_list.create(self, frame=inputframe, width = 7, datalist=notify_me, x = 90, y = 160)
         
         Button(inputframe, text="Save", font=("Arial", 15), command = self.save_data,  width = 5, borderwidth=0, highlightthickness=0, pady = 10, background="#ABBBF0").place(x = 190, y = 200)
-                 
-    #help add if condition : if the time_slot has already existed, then show msgbox whether to replace or not
+        
+    #table method 
+    # def add_row_table2(self, date, month, year, time_period, note_info, location_info, table):
+    def add_row_table(self, date, month, year, table, index):
+        tasks = self.file_handler.get_day_tasks(date, month, year)
+        if tasks != None:   
+            table.insert('', tk.END, values=(tasks[index][str(len(tasks))]['start'] + " - " + tasks[index][str(len(tasks))]['end'], tasks[index][str(len(tasks))]['note'] + "@" + tasks[index][str(len(tasks))]['location']))
+            
+    def edit_row_table(self): 
+        selected_item = self.tree.selection()[0]
+        self.tree.item(selected_item, text="", values = ())
+    
+    def delete_row_table(self):
+        pass
+    
+    #problem add if condition : if the time_slot has already existed, then show msgbox whether to replace or not
     def item_selected(self, event, tree):
         for selected_item in tree.selection():
             item = tree.item(selected_item)
             record = item['values']
             showinfo(title="Information", message=",".join(record))
-            
-    def time_to_number(self, time): 
-        return float(time[:len(time)-2])
             
     def save_data(self): 
         self.note_info = self.note.get() 
@@ -138,7 +150,7 @@ class Day(PlannerView):
         self.location_info = self.location.get()
         if self.note_info == "" or self.category_info == "" or self.notify_info == "" or self.start_t == "" or self.end_t == "" or self.location_info == "":
             messagebox.showerror("Error", "Please fill in all the information")
-        #limit range of time not done
+        #problem: limit range of time not done
         elif self.time_to_number(self.start_t) > self.time_to_number(self.end_t): 
             messagebox.showerror("Error", "Start time cannot be later than end time")
         elif self.time_to_number(self.start_t) == self.time_to_number(self.end_t): 
@@ -146,19 +158,11 @@ class Day(PlannerView):
         elif self.category_info.isspace() or self.location_info.isspace(): 
             messagebox.showerror("Error", "Can't least answer fields as blank") 
         else:
-            data = self.file_handler.save_data(int(current_year), current_month, int(current_date), "data3.pickle", self.note_info, self.category_info, self.location_info, self.start_t, self.end_t, self.notify_info)
+            data = self.file_handler.save_data(int(current_year), current_month, 11, "data3.pickle", self.note_info, self.category_info, self.location_info, self.start_t, self.end_t, self.notify_info)
             info = self.file_handler.load_data("data3.pickle")
-            # self.update_table(10, "November", 2023, tree)
             # print(info)
+            self.add_row_table(11, "November", 2023, self.tree, -1)
             self.clear()
-            
-    def update_table(self, date, month, year, tree): 
-        tasks = self.file_handler.get_day_tasks(date, month, year)
-        count = 0
-        if tasks != None: 
-            for task in tasks:
-                count += 1
-                tree.insert('', tk.END, values=(task[str(count)]['start'] + " - " + task[str(count)]['end'], task[str(count)]['note'] + "@" + task[str(count)]['location']))
             
     def clear(self): #clear combobox
         self.note.delete(0, 'end')
@@ -168,7 +172,8 @@ class Day(PlannerView):
         self.end_time.set('')
         self.notify.set('')
         
-        
+    def time_to_number(self, time): 
+        return float(time[:len(time)-2])
         
 class Collapsible_list: 
     def create(self, frame, width, datalist, row=None, column=None, x=None, y=None, canType = False):

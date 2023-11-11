@@ -8,11 +8,11 @@ for i in range(24):
         time_slot.append("0" + str(i) + ".00AM")
         time_slot.append("0" + str(i) + ".30AM")
     elif i > 12:
-        time_slot.append(str(i) + ":00PM")
-        time_slot.append(str(i) + ":30PM")
+        time_slot.append(str(i) + ".00PM")
+        time_slot.append(str(i) + ".30PM")
     else: 
-        time_slot.append(str(i) + ":00AM")
-        time_slot.append(str(i) + ":30AM")
+        time_slot.append(str(i) + ".00AM")
+        time_slot.append(str(i) + ".30AM")
 
 notify_me = ["Yes", "No"]
 category_list = ["None", "Work", "Study", "Exercise", "Leisure", "Others"]

@@ -47,16 +47,16 @@
 # # run the app
 # root.mainloop()
 
+from fileHandling import FileHandling
+import pickle
 
-import calendar
-year = 2023
-month = 10  
-day = 17
+filehandler = FileHandling()
+# filehandler.initialize()
+# filehandler.save_data(2024, "January", 1, "data3.pickle", "Sleep", "None", "Home", "12.00AM", "12.30AM", "Yes")
+info = filehandler.load_data("data3.pickle")
+print(info)
+# print(filehandler.get_data())
 
-# Get the day of the week (0 = Monday, 6 = Sunday)
-day_of_week = calendar.weekday(year, month, day)
+# data = [{'1': {'note': 'Walk', 'category': 'Exercise', 'location': 'Park', 'start': '01.30AM', 'end': '02.30AM', 'notify_me': 'No'}}]
+# print(data[-1][str(len(data))]['start'])
 
-# Map the numeric representation to the name of the day
-day_name = calendar.day_name[day_of_week]
-
-print(f"The day of the week for {month}/{day}/{year} is {day_name}.")
