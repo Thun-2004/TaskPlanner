@@ -168,8 +168,6 @@ class Day(PlannerView):
         self.end_time.set('')
         self.notify.set('')
         
-        
-        
 class Collapsible_list: 
     def create(self, frame, width, datalist, row=None, column=None, x=None, y=None, canType = False):
         data = tk.StringVar()

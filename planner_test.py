@@ -49,7 +49,7 @@ class PlannerView(tk.Frame, ABC):
         super().__init__(master)
         self.place(x = 0, y = 100, width = 785, height = 490) #set up frame with specific location
         self.file_handler = FileHandling()
-        # self.file_handler.initialize() #add default data to file for first time
+        self.file_handler.initialize() #add default data to file for first time
     
     @abstractmethod
     def initialize_ui(self): 
@@ -80,12 +80,19 @@ class Day(PlannerView):
         self.tree.column(1,anchor='center', stretch=tk.NO)
         self.tree.heading("Note", text="Note")
         
-        tasks = self.file_handler.get_day_tasks(11, "November", 2023)
-        if tasks != None:
-            for i in range(len(tasks)):
+        # tasks = self.file_handler.get_day_tasks(11, "November", 2023)
+        # if tasks != None:
+        #     for i in range(len(tasks)):
+        #         self.add_row_table(11, "November", 2023, self.tree, i)
+                
+        ids = self.file_handler.get_daytask_ids(11, "November", 2023)
+        if len(ids) > 0:
+            for i in range(len(ids)):
                 self.add_row_table(11, "November", 2023, self.tree, i)
             
         self.tree.bind('<<TreeviewSelect>>', self.item_selected)
+        self.tree.bind('<ButtonRelease-1>', self.onclick_to_edit)
+        
         self.tree.grid(row=0, column=0, sticky='nsew')
         # add a scrollbar
         scrollbar = ttk.Scrollbar(self.leftframe, orient=tk.VERTICAL, command= self.tree.yview)
@@ -119,28 +126,84 @@ class Day(PlannerView):
         self.notify = Collapsible_list.create(self, frame=inputframe, width = 7, datalist=notify_me, x = 90, y = 160)
         
         Button(inputframe, text="Save", font=("Arial", 15), command = self.save_data,  width = 5, borderwidth=0, highlightthickness=0, pady = 10, background="#ABBBF0").place(x = 190, y = 200)
-        
-    #table method 
-    # def add_row_table2(self, date, month, year, time_period, note_info, location_info, table):
+        Button(inputframe, text="Edit", font=("Arial", 15), command = self.edit_data,  width = 5, borderwidth=0, highlightthickness=0, pady = 10, background="#ABBBF0").place(x = 100, y = 200)
+        Button(inputframe, text="Delete", font=("Arial", 15), command = self.delete_data,  width = 5, borderwidth=0, highlightthickness=0, pady = 10, background="#ABBBF0").place(x = 10, y = 200)
+
     def add_row_table(self, date, month, year, table, index):
         tasks = self.file_handler.get_day_tasks(date, month, year)
         if tasks != None:   
             table.insert('', tk.END, values=(tasks[index][str(len(tasks))]['start'] + " - " + tasks[index][str(len(tasks))]['end'], tasks[index][str(len(tasks))]['note'] + "@" + tasks[index][str(len(tasks))]['location']))
+    # def add_row_table(self, date, month, year, table, id):
+    #     tasks = self.file_handler.get_day_tasks(date, month, year)
+    #     for task in tasks:   
+    #         for key, value in task.items():
+    #             if key == str(id):
+    #                 table.insert('', tk.END, values=(task[key].get('start') + " - " + task[key].get('end'), task[key].get('note') + "@" + task[key].get('location')))
             
-    def edit_row_table(self): 
+    def edit_row_table(self, time_period, note_info): 
         selected_item = self.tree.selection()[0]
-        self.tree.item(selected_item, text="", values = ())
+        self.tree.item(selected_item, text="", values = (time_period, note_info))
     
-    def delete_row_table(self):
-        pass
-    
+    def delete_data(self):
+        deleted = self.tree.selection()[0]
+        self.tree.delete(deleted)
+        self.file_handler.delete_data(2023, "November", 11, self.task_id)
+        self.clear()
+        
     #problem add if condition : if the time_slot has already existed, then show msgbox whether to replace or not
-    def item_selected(self, event, tree):
-        for selected_item in tree.selection():
-            item = tree.item(selected_item)
+    def item_selected(self, event):
+        for selected_item in self.tree.selection():
+            item = self.tree.item(selected_item)
             record = item['values']
             showinfo(title="Information", message=",".join(record))
-            
+    
+    #return all info and change data on treeview and pickle when click edit 
+    def onclick_to_edit(self, event): 
+        #when user click on cell -> return time-period and note_info from table
+        #match with self.data with task_id n return all info to display on input boxes
+        selected_item = self.tree.focus()
+        values = self.tree.item(selected_item, 'values')
+        if values: 
+            values = values #problem: what if value = None
+        time_period, note_info = values
+        tasks = self.file_handler.get_day_tasks(11, "November", 2023)
+        print(tasks)
+        self.task_id = ""
+        temp_note = ""
+        temp_category = ""
+        temp_location = ""
+        temp_start = ""
+        temp_end = ""
+        temp_notify = ""
+        #problem when [{}, {....}]
+        ids = self.file_handler.get_daytask_ids(11, "November", 2023)
+        for i, task in enumerate(tasks): 
+            if task[str(ids[i])].get('start') + " - " + task[str(ids[i])].get('end') == time_period and task[str(ids[i])].get('note') + "@" + task[str(ids[i])].get('location') == note_info: 
+                self.task_id = str(ids[i])
+                temp_note = task[str(ids[i])].get('note')
+                temp_category = task[str(ids[i])].get('category')
+                temp_location = task[str(ids[i])].get('location')
+                temp_start = task[str(ids[i])].get('start')
+                temp_end = task[str(ids[i])].get('end')
+                temp_notify = task[str(ids[i])].get('notify_me')
+                break
+        #return old info from task_id 
+        self.note.insert(0, temp_note)
+        self.category.set(temp_category)
+        self.location.insert(0, temp_location)
+        self.start_time.set(temp_start)
+        self.end_time.set(temp_end)
+        self.notify.set(temp_notify)
+        
+    #when edit is clicked -> save data to pickle with the same id , change data on treeview
+    def edit_data(self): 
+        #problem: task_id shouldn't be self
+        self.file_handler.edit_data(2023, "November", 11, self.task_id, self.note.get(), self.category.get(), self.location.get(), self.start_time.get(), self.end_time.get(), self.notify.get())
+        time_period = self.start_time.get() + " - " + self.end_time.get()
+        note_info = self.note.get() + "@" + self.location.get()
+        self.edit_row_table(time_period, note_info)
+        self.clear()
+    
     def save_data(self): 
         self.note_info = self.note.get() 
         self.category_info= self.category.get() 
@@ -159,7 +222,7 @@ class Day(PlannerView):
             messagebox.showerror("Error", "Can't least answer fields as blank") 
         else:
             data = self.file_handler.save_data(int(current_year), current_month, 11, "data3.pickle", self.note_info, self.category_info, self.location_info, self.start_t, self.end_t, self.notify_info)
-            info = self.file_handler.load_data("data3.pickle")
+            # info = self.file_handler.load_data("data3.pickle")
             # print(info)
             self.add_row_table(11, "November", 2023, self.tree, -1)
             self.clear()

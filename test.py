@@ -60,3 +60,34 @@ print(info)
 # data = [{'1': {'note': 'Walk', 'category': 'Exercise', 'location': 'Park', 'start': '01.30AM', 'end': '02.30AM', 'notify_me': 'No'}}]
 # print(data[-1][str(len(data))]['start'])
 
+# data = [
+#             {
+#                 '1' : {
+#                     'note' : "note", 
+#                     'category' : "category",
+#                     'location' : "location",
+#                     'start' : "start_t",
+#                     'end' : "end_t",
+#                     'notify_me' : "notify_result"
+#                 }
+#             }, 
+#             {
+#                 '2' : {
+#                     'note' : "note2", 
+#                     'category' : "category2",
+#                     'location' : "location2",
+#                     'start' : "01.00AM",
+#                     'end' : "02.00AM",
+#                     'notify_me' : "notify_result2"
+#                 }
+#             }
+# ]
+
+# time_period = "01.00AM - 02.00AM"
+# note_info = "note2@location2"
+# for i, task in enumerate(data): 
+#     if task[str(i+1)].get('start') + " - " + task[str(i+1)].get('end') == time_period and task[str(i+1)].get('note') + "@" + task[str(i+1)].get('location') == note_info: 
+#         task_id = str(i+1)
+#         break
+# print(task_id)
+
