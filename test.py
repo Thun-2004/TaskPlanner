@@ -83,11 +83,67 @@ print(info)
 #             }
 # ]
 
-# time_period = "01.00AM - 02.00AM"
-# note_info = "note2@location2"
-# for i, task in enumerate(data): 
-#     if task[str(i+1)].get('start') + " - " + task[str(i+1)].get('end') == time_period and task[str(i+1)].get('note') + "@" + task[str(i+1)].get('location') == note_info: 
-#         task_id = str(i+1)
-#         break
-# print(task_id)
+#sort start time 
+#reassign id according to start time 
+#save date 
 
+data = [         
+    {
+        '1' : {
+            'note' : "note", 
+            'category' : "category",
+            'location' : "location",
+            'start' : "11.00AM",
+            'end' : "end_t",
+            'notify_me' : "notify_result"
+        },
+        '2' : {
+            'note' : "note", 
+            'category' : "category",
+            'location' : "location",
+            'start' : "01.00AM",
+            'end' : "end_t",
+            'notify_me' : "notify_result"
+        }
+    }
+]
+
+sorted_data = []
+times = []
+for i in data:
+    for info in i.values(): 
+        times.append(float(info.get('start')[:4]))
+times = sorted(times)
+for i in data: 
+    for info in i.values(): 
+        for n, time in enumerate(times): 
+            if float(info.get('start')[:4]) == time:
+                found = {str(n + 1) : info}
+                sorted_data.insert(n, found)
+# for i in sorted_data:
+    #key: list(i.keys())[0]
+    #value: i.get(list(i.keys())[0]).get('note')
+    # print(list(i.keys())[0])         
+                
+# print(sorted_data)
+
+# from datetime import datetime
+
+# current_month = datetime.now().month
+# print(current_month)
+import calendar
+from datetime import datetime
+y = 2023
+m = 11
+ans = calendar.monthrange(y, m)[1]
+month = datetime.now().month
+current_day = calendar.day_name[calendar.weekday(y, m, 11)]
+
+
+content = {"01.00AM - 01.30AM ggggg@gg", "00.00AM - 01.30AM ggggg@gg"}
+content = sorted(content, key=lambda x: float(x[:5]))
+
+
+# print(content)
+
+# print(calendar.month_name[11])

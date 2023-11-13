@@ -45,7 +45,7 @@ class FileHandling:
             return []
     
     def get_day_tasks(self, day, month, year): #return list of time slots 
-        info = self.load_data("data3.pickle")
+        info = self.data
         for i in info:
             if i.get('Year') == year and i.get('Month') == month:
                 for j in i.get('Day'): 
@@ -55,7 +55,7 @@ class FileHandling:
                     
     def get_daytask_ids(self, day, month, year): 
         ids = []
-        info = self.load_data("data3.pickle")
+        info = self.data
         for i in info:
             if i.get('Year') == year and i.get('Month') == month:
                 for j in i.get('Day'): 
@@ -64,8 +64,28 @@ class FileHandling:
                             for key in k.keys(): 
                                 ids.append(key)
         return ids
-                    
-    def edit_data(self, year, month, date, task_id, note, category, location, start_t, end_t, notify_result): 
+    
+    #add changed data to self.data
+    def sort_data_by_time(self, date, month, year):
+        data = self.get_day_tasks(date, month, year)
+        sorted_data = []
+        times = []
+        if data != None: 
+            for i in data:
+                for info in i.values(): 
+                    times.append(float(info.get('start')[:4]))
+            times = sorted(times)
+            for i in data: 
+                for info in i.values(): 
+                    for n, time in enumerate(times): 
+                        if float(info.get('start')[:4]) == time: 
+                            found = {str(n + 1) : info}
+                            sorted_data.insert(n, found)
+            for i in sorted_data:
+                value = i.get(list(i.keys())[0])
+                self.edit_data(year, month, date, list(i.keys())[0], value.get('note'), value.get('category'), value.get('location'), value.get('start'), value.get('end'), value.get('notify_me'))
+
+    def edit_data(self, date, month, year, task_id, note, category, location, start_t, end_t, notify_result): 
         with open("data3.pickle", 'wb') as file: 
             for i in self.data:
                 if i.get('Year') == year and i.get('Month') == month:
@@ -82,7 +102,7 @@ class FileHandling:
                                     break
             pickle.dump(self.data, file)
     
-    def delete_data(self, year, month, date, task_id):
+    def delete_data(self, date, month, year, task_id):
         with open("data3.pickle", 'wb') as file:
             for i in self.data:
                 if i.get('Year') == year and i.get('Month') == month:
@@ -105,10 +125,9 @@ class FileHandling:
                     if n['Date'] == date:
                         id = len(n['Time_slot']) + 1
                         print(self.get_daytask_ids(date, month, year))
-                        
-                        if id in self.get_daytask_ids(date, month, year): 
+    
+                        if str(id) in self.get_daytask_ids(date, month, year): 
                             id = int(self.get_daytask_ids(date, month, year)[-1]) + 1
-                            
                         n['Time_slot'].append({str(id) : {
                                         'note' : note, 
                                         'category' : category,
