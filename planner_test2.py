@@ -15,46 +15,53 @@ from fileHandling import FileHandling
 #add/edit/delete function workd
 #change next day works
 
+global file_handler
+file_handler = FileHandling()
+file_handler.initialize() #add default data to file for first time
+
 class Planner(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Planner")
-        self.geometry("785x500")
+        self.geometry("900x650")
         self.resizable(width = False, height = False)
         global month
         month = datetime.now().month
 
-        Button(self,text = "+", width = 3, borderwidth = 0, highlightthickness = 0).place(x = 270, y = 5)
-        Button(self,text = "Day", width = 3, borderwidth = 0, highlightthickness = 0, command = lambda : self.call_page("Day")).place(x = 340, y = 5)
-        Button(self,text = "Week", width = 3, borderwidth = 0, highlightthickness = 0, command = lambda : self.call_page("Week")).place(x = 410, y = 5)
-        Button(self,text = "Month", width = 3, borderwidth = 0, highlightthickness = 0, command = lambda : self.call_page("Month")).place(x = 480, y = 5)
-        Button(self, text = "<", width = 1, borderwidth = 0, highlightthickness = 0, command = lambda : self.switch(-1)).place(x = 630, y = 20)
-        Button(self, text = "Today", width = 3, borderwidth = 0, highlightthickness = 0, command=self.get_current_page).place(x = 670, y = 20)
-        Button(self, text = ">", width = 1, borderwidth = 0, highlightthickness = 0, command = lambda : self.switch(1)).place(x = 730, y = 20)
+        Button(self, text = "+", width = 3, borderwidth = 0, highlightthickness = 0).place(x = 310, y = 5)
+        Button(self, text = "Day", width = 3, borderwidth = 0, highlightthickness = 0, command = lambda : self.call_page("Day")).place(x = 380, y = 5)
+        Button(self, text = "Week", width = 3, borderwidth = 0, highlightthickness = 0, command = lambda : self.call_page("Week")).place(x = 450, y = 5)
+        Button(self, text = "Month", width = 3, borderwidth = 0, highlightthickness = 0, command = lambda : self.call_page("Month")).place(x = 520, y = 5)
+        Button(self, text = "<", width = 1, borderwidth = 0, highlightthickness = 0, command = lambda : self.switch(-1)).place(x = 740, y = 30)
+        Button(self, text = "Today", width = 3, borderwidth = 0, highlightthickness = 0, command = self.get_current_page).place(x = 780, y = 30)
+        Button(self, text = ">", width = 1, borderwidth = 0, highlightthickness = 0, command = lambda : self.switch(1)).place(x = 840, y = 30)
         
-        self.date_label = Label(self, text = self.update_date(), font = ("Arial", 25, "bold"))
-        self.date_label.place(x = 10, y = 45)
-        self.day_label = Label(self, text = current_day, font = ("Arial", 20))
-        self.day_label.place(x = 10, y = 72)
+        self.date_label = Label(self, text = self.update_date(), font = ("Arial", 30, "bold"))
+        self.date_label.place(x = 10, y = 60)
+        self.day_label = Label(self, text = current_day, font = ("Arial", 20), borderwidth = 0)
+        self.day_label.place(x = 12, y = 97)
         
         #default setting
+        # self.current_page = "Month"
+        # day = Month(self)
         self.current_page = "Day"
-        day = Day(self)
-       
-    #problem
+        self.month_page = Month(self)
+        self.day_page = Day(self)
+        
+    def show_page(self, page):
+        page.tkraise() 
+    
     def call_page(self, page):
         if page == "Day":
-            self.current_page = "Day"
-            day = Day(self)
+            self.show_page(self.day_page)
         elif page == "Week":
-            self.current_page = "Week"
+            self.show_page(self.week_page)
         elif page == "Month": 
-            self.current_page = "Month"
-        
-    #prob: show table according to current_date
+            self.show_page(self.month_page)
+
     def update_date(self): 
         return f"{current_month} {current_date}, {current_year}"
-    
+
     def get_current_page(self):
         global current_year
         global current_date
@@ -66,7 +73,8 @@ class Planner(tk.Tk):
         current_day = today.strftime("%A")
         self.date_label.config(text = self.update_date())
         self.day_label.config(text = current_day)
-        Day.setup_table_frame(self.dayframe)
+        # day = Day(self)
+        Day.setup_table_frame(self.day)
     
     def switch(self, direction): #current date/year = string 
         global current_date
@@ -97,8 +105,9 @@ class Planner(tk.Tk):
 
             self.date_label.config(text = self.update_date())
             self.day_label.config(text = current_day)
-            Day(self)
-            
+            # Day(self)
+            Day.setup_table_frame(self.day)
+
         elif self.current_page == "Week": 
             pass
             #call next page
@@ -106,14 +115,15 @@ class Planner(tk.Tk):
             pass
             #call next page
         else: 
-            pass
+            pass        
+        
 
 class PlannerView(tk.Frame, ABC): 
     def __init__(self, master):
         super().__init__(master)
-        self.place(x = 0, y = 100, width = 785, height = 490) #set up frame with specific location
-        self.file_handler = FileHandling()
-        self.file_handler.initialize() #add default data to file for first time
+        self.place(x = 0, y = 120, width = 900, height = 570) #set up frame with specific location
+        # self.file_handler = FileHandling()
+        # self.file_handler.initialize() #add default data to file for first time
     
     @abstractmethod
     def initialize_ui(self): 
@@ -133,18 +143,19 @@ class Day(PlannerView):
         self.setup_input_frame()
         
     def setup_table_frame(self):
+        self.file_handler = file_handler
         self.leftframe = tk.Frame(self, bg="#D9D9D9")
-        self.leftframe.place(x = 10, y = 10, width = 460, height = 900)
+        self.leftframe.place(x = 10, y = 10, width = 500, height = 420)
         columns = ('Time', 'Note')#note@time
-        self.tree = ttk.Treeview(self.leftframe, columns=columns, show = "headings", height=16)
-    
+        self.tree = ttk.Treeview(self.leftframe, columns=columns, show = "headings", height=40)
+        style = ttk.Style()
+        style.configure("Treeview.Heading", font=("Arial", 15), rowheigth=20)
         #problem: table heading not change width 
-        self.tree.column(0,anchor='center', stretch=tk.NO, width=200)
+        self.tree.column(0,anchor='center', stretch=tk.NO, width=150)
         self.tree.heading("Time", text="Time")
-        self.tree.column(1,anchor='center', stretch=tk.NO)
+        self.tree.column(1,anchor='center', stretch=tk.NO, width=320)
         self.tree.heading("Note", text="Note")
-        self.content = [] #keep track of content in table
-        
+        self.content = [] #keep track of content in table)
         ids = self.file_handler.get_daytask_ids(current_date, current_month, current_year)
         if len(ids) > 0:
             for i in range(len(ids)):
@@ -162,13 +173,13 @@ class Day(PlannerView):
     def setup_input_frame(self): 
         #input frame
         self.rightframe = tk.Frame(self, bg="#D9D9D9")
-        self.rightframe.place(x = 444, y = 10, width = 340, height = 900)
-        Button(self.rightframe, text="add", font = ("Arial", 15), width = 5, height = 2, borderwidth=0, highlightthickness=0, pady = 0, background="#ABBBF0").place(x = 20, y = 20)
+        self.rightframe.place(x = 500, y = 10, width = 380, height = 420)
+        Button(self.rightframe, text="Add", font = ("Arial", 15), width = 5, height = 2, borderwidth=0, highlightthickness=0, pady = 0, background="#ABBBF0").place(x = 20, y = 20)
         inputframe = tk.Frame(self.rightframe, bg="#ABBBF0")
-        inputframe.place(x = 20, y = 50, width = 300, height = 260)
+        inputframe.place(x = 20, y = 50, width = 345, height = 260)
         
         Label(inputframe, text = "Note", font = ("Arial", 15)).place(x = 0, y = 12)
-        self.note = tk.Entry(inputframe, borderwidth = 1) 
+        self.note = tk.Entry(inputframe, width=25) 
         self.note.place(x = 90, y = 10)
         
         Label(inputframe, text = "Category", font = ("Arial", 15)).place(x = 0, y = 42)
@@ -179,7 +190,7 @@ class Day(PlannerView):
         self.end_time = Collapsible_list.create(self, frame=inputframe, width = 7, datalist=time_slot, x = 200, y = 100)
         
         Label(inputframe, text = "Location", font = ("Arial", 15)).place(x = 0, y = 130)
-        self.location = tk.Entry(inputframe, width = 15, borderwidth = 1)
+        self.location = tk.Entry(inputframe, width=25)
         self.location.place(x = 90, y = 130)
         
         Label(inputframe, text = "Notify me", font = ("Arial", 15)).place(x = 0, y = 160)
@@ -207,17 +218,16 @@ class Day(PlannerView):
         else: 
             table.insert('', tk.END, values=(self.content[-1].split(" ")[0], self.content[-1].split(" ")[1]))
 
-        
     def edit_row_table(self, time_period, note_info): 
         if self.tree.selection() != (): #incase user click on a blank area of the table
             selected_item = self.tree.selection()[0]
             self.tree.item(selected_item, text="", values = (time_period, note_info))
             #edit self.content
-            for i in self.content: 
-                if i.split(" ")[0] == time_period: 
+            for i in self.content:
+                if i.split(" ")[0] == time_period:
                     self.content[self.content.index(i)] = time_period + " " + note_info
                     break
-    
+
     def delete_data(self):
         if self.tree.selection()!= (): 
             deleted = self.tree.selection()[0]
@@ -299,9 +309,9 @@ class Day(PlannerView):
         else:
             data = self.file_handler.save_data(int(current_year), current_month, current_date, "data3.pickle", self.note_info, self.category_info, self.location_info, self.start_t, self.end_t, self.notify_info)
             self.file_handler.sort_data_by_time(current_date, current_month, current_year)
-            # self.content.append(self.start_t + "-" + self.end_t + " " + self.note_info + "@" + self.location_info)
             self.content = sorted(self.content, key = lambda x: float(x[:5]))
             self.add_row_table(current_date, current_month, current_year, self.tree, -1)
+            #temp
             self.clear()
             
     def clear(self): #clear combobox
@@ -315,15 +325,160 @@ class Day(PlannerView):
     def time_to_number(self, time): 
         return float(time[:len(time)-2])
 
-class Week(): 
+class Table: 
+    def display_tasks_table(self,date, month, year, table_frame):
+        global file_handler
+        columns = ('Time', 'Note')#note@time
+        self.tree = ttk.Treeview(table_frame, columns=columns, show = "headings", height=13)
+        style = ttk.Style()
+        style.configure("Treeview.Heading", font=("Arial", 15), rowheigth=20)
+        self.tree.column(0,anchor='center', stretch=tk.NO, width=150)
+        self.tree.heading("Time", text="Time")
+        self.tree.column(1,anchor='center', stretch=tk.NO, width=234)
+        self.tree.heading("Note", text="Note")
+        self.content = []
+        
+        #why task & id == None
+        print("id task from table")
+        ids = file_handler.get_daytask_ids(date, month, year)
+        if len(ids) > 0:
+            for i in range(len(ids)):
+                print(ids[i])
+                self.add_row_table(date, month, year, self.tree, i)
+     
+        self.tree.grid(row=0, column=0, sticky='nsew')
+        # add a scrollbar
+        scrollbar = ttk.Scrollbar(table_frame, orient=tk.VERTICAL, command= self.tree.yview)
+        self.tree.configure(yscroll=scrollbar.set)
+        scrollbar.grid(row=0, column=1, sticky='ns')
+        
+    def add_row_table(self, date, month, year, table, index):
+        global file_handler
+        tasks = file_handler.get_day_tasks(date, month, year)
+        value = list(tasks[index].values())[0]
+        self.content.append(value.get('start') + "-" + value.get('end') + " " + value.get('note') + "@" + value.get('location'))
+        ind = 0
+        if tasks != None:
+            for i in range(len(self.content)):
+                if float(self.content[i][:5]) < float(value.get('start')[:4]): 
+                    ind = i + 1
+            table.insert('', ind, values=(self.content[-1].split(" ")[0], self.content[-1].split(" ")[1]))
+        else: 
+            table.insert('', tk.END, values=(self.content[-1].split(" ")[0], self.content[-1].split(" ")[1]))
+        
+        
+class Month(PlannerView): 
+    def __init__(self, master):
+        super().__init__(master)
+        self.initialize_ui()
+        
+    def initialize_ui(self): 
+        self.setup_calendar()
+        
 
+    def setup_calendar(self): 
+        self.file_handler = file_handler
+        self.calendar_frame = Frame(self)
+        self.calendar_frame.place(x = 0, y = 10, width = 900, height = 570)
+        day_labels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+        for i, day in enumerate(day_labels):
+            day = Label(self.calendar_frame, text = day, width = 20, height = 2, relief = "flat", borderwidth = 0,  bg="white", highlightthickness=0)
+            day.place(x = i*120, y = 0)
+        day = day_labels.index(current_day[:3])
+                
+        #prep data 
+        num_days_prev = calendar.monthcalendar(2023, 10)
+        num_days_current = calendar.monthcalendar(2023, 11)
+        num_days_next = calendar.monthcalendar(2023, 12)
 
+        for row in range(len(num_days_current)): 
+            for col in range(len(num_days_current[row])): 
+                if num_days_current[row][col] == 0 and row == 0: 
+                    num_days_current[row][col] = num_days_prev[len(num_days_prev) - 1][col]
+                elif num_days_current[row][col] == 0: 
+                    num_days_current[row][col] = num_days_next[0][col]
+        
+        if len(num_days_current) < 6: 
+            num_days_current.append(num_days_next[1])
+        
+        #problem: how to track current month  
+        #display calendar
+        column_x = 0
+        row_y = 32
+        for row in range(len(num_days_current)): 
+            for col in range(len(num_days_current[row])): 
+                bg = "white"
+                if column_x == 0 or column_x == 630: 
+                    bg = "#c8c8c8"
+                canvas = tk.Canvas(self.calendar_frame, width = 130, height = 80, bg=bg, borderwidth = 0)
+                canvas.place(x=127*col, y=row_y)
+                canvas.create_text(120, 10, text=str(num_days_current[row][col]), font=("Arial", 15, "bold"), anchor="ne")
+                
+                #change month/year
+                self.display_cellinfo(canvas, num_days_current[row][col], current_month, current_year)
+                # canvas.bind("<Double-Button-1>", lambda event, date=num_days_current[row][col], month=current_month, year=current_year: self.return_day_page(event, date, month, year))
+                canvas.bind("<Button-1>", lambda event, date=num_days_current[row][col], month=current_month, year=current_year: self.on_canvas_click(event, date, month, year))
+                column_x += 105
+                if column_x > 700:
+                    row_y += 80
+                    column_x = 0 
+    
+    def on_canvas_click(self, event, date, month, year): #display info as messagebox
+        child_window = PopUpWindow(self)
+        child_window.display_table(date, month, year)
+
+    def display_cellinfo(self, canvas, date, month, year): #display info on canvas
+        tasks = self.file_handler.get_day_tasks(date, month, year)
+        if tasks != None: 
+            for i, task in enumerate(tasks):
+                note = list(task.values())[0].get('note')
+                start = list(task.values())[0].get('start')
+                canvas.create_text(50, 50 + i*12, text= f"- {note} {start}", font=("Arial", 10))
+                if i == 1: 
+                    break
+    def return_day_page(self, event,date, month, year): 
+        global current_date
+        global current_month
+        global current_year
+        current_date = date
+        current_month = month
+        current_year = year
+        planner = Planner()
+        planner.call_page("Day")
+        
+    def save_data(self): 
+        pass
+
+class PopUpWindow(tk.Toplevel):
+    def __init__(self, master): 
+        super().__init__(master)
+        self.geometry("400x300") #change according to list of data
+        self.popup_window = None
+        
+    def display_table(self, date, month, year): 
+        self.title(f"Plan for {month} {date}, {year}")
+        table_frame = Frame(self)
+        table_frame.grid(row = 0, column = 0, rowspan = 2, columnspan = 2, sticky = tk.W + tk.E)
+        table = Table()
+        table.display_tasks_table(date, month, year, table_frame)
+        Button(table_frame, text = "Edit", command= self.return_day_page(date, month, year) ,width = 10).grid(row = 2, column = 0)
+
+    def return_day_page(self, date, month, year): 
+        print(self.popup_window.winfo_exists())
+
+        # if self.popup_window and self.popup_window.winfo_exists():
+        #     self.popup_window.destroy()
+        
+        # self.destroy()
+        # planner = Planner()
+        # planner.call_page("Day")
+        
 class Collapsible_list: 
     def create(self, frame, width, datalist, row=None, column=None, x=None, y=None, canType = False):
         data = tk.StringVar()
         data_combobox = ttk.Combobox(frame, width=width, textvariable=data)
         data_combobox['value'] = datalist
-        if canType == False: 
+        if canType == False:
             data_combobox['state'] = 'readonly'
         data_combobox.place(x=x, y=y)
         return data
@@ -331,7 +486,6 @@ class Collapsible_list:
 class InvalidValueError(Exception): 
     pass
 
-    
 if __name__ == "__main__":
     planner = Planner()
     planner.mainloop()

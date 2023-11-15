@@ -145,5 +145,15 @@ content = sorted(content, key=lambda x: float(x[:5]))
 
 
 # print(content)
-
 # print(calendar.month_name[11])
+
+num_days_prev = calendar.monthcalendar(2023, 10)
+num_days_current = calendar.monthcalendar(2023, 11)
+num_days_next = calendar.monthcalendar(2023, 12)
+
+for row in range(len(num_days_current)): 
+    for col in range(len(num_days_current[row])): 
+        if num_days_current[row][col] == 0 and row == 0: 
+            num_days_current[row][col] = num_days_prev[len(num_days_prev) - 1][col]
+        elif num_days_current[row][col] == 0: 
+            num_days_current[row][col] = num_days_next[0][col]

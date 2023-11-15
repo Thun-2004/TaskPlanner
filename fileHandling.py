@@ -56,6 +56,7 @@ class FileHandling:
     def get_daytask_ids(self, day, month, year): 
         ids = []
         info = self.data
+        # print(info)
         for i in info:
             if i.get('Year') == year and i.get('Month') == month:
                 for j in i.get('Day'): 
