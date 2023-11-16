@@ -10,19 +10,15 @@ from abc import ABC, abstractmethod
 from config import today, current_year, current_month, current_date, current_day, category_list, time_slot, notify_me
 from fileHandling import FileHandling
 
-#fix prepare data for table 
-#list : fix table(load and display data to table)
-#add/edit/delete function workd
-#change next day works
-# global planner
-global file_handler
-file_handler = FileHandling()
-file_handler.initialize() #add default data to file for first time
 global num_current_year
 global num_current_month
 global str_current_month
 global num_current_date
 global str_current_day
+global planner
+global file_handler
+file_handler = FileHandling()
+file_handler.initialize() #add default data to file for first time
 
 num_current_year = current_year
 num_current_date = current_date
@@ -53,9 +49,7 @@ class Planner(tk.Tk):
         self.day_label = Label(self, text = current_day, font = ("Arial", 20), borderwidth = 0)
         self.day_label.place(x = 12, y = 97)
         
-        #default setting
-        # self.current_page = "Month"
-        # day = Month(self)
+    
         self.current_page = "Day"
         self.month_page = Month(self)
         self.day_page = Day(self)
@@ -64,9 +58,13 @@ class Planner(tk.Tk):
         page.tkraise() 
     
     def call_page(self, page):
+        current_date = num_current_date
+        current_month = str_current_month
+        current_year = num_current_year
         if page == "Day":
             self.current_page = "Day"
             self.date_label.config(text = f"{current_month} {current_date}, {current_year}") #prob: replace with update
+            self.day_label.config(text = current_day)
             self.show_page(self.day_page)
         elif page == "Week":
             pass
@@ -76,6 +74,7 @@ class Planner(tk.Tk):
             self.date_label.config(text = f"{current_month} {current_year}")
             self.day_label.config(text = "")
             self.show_page(self.month_page)
+            Month.setup_calendar(self.month_page)
 
     def update_date(self): 
         return f"{current_month} {current_date}, {current_year}"
@@ -356,7 +355,6 @@ class Day(PlannerView):
             self.file_handler.sort_data_by_time(current_date, current_month, current_year)
             self.content = sorted(self.content, key = lambda x: float(x[:5]))
             self.add_row_table(current_date, current_month, current_year, self.tree, -1)
-            #temp
             self.clear()
             
     def clear(self): #clear combobox
@@ -418,13 +416,13 @@ class Month(PlannerView):
         self.initialize_ui()
         current_year = int(today.strftime("%Y"))
         current_date = int(today.strftime("%d"))  
-        # self.planner = planner
         # self.planner.change_day(current_date, num_month, current_year)
 
     def initialize_ui(self): 
         self.setup_calendar()
         
     def setup_calendar(self): 
+        # self.planner = planner
         self.file_handler = file_handler
         self.calendar_frame = Frame(self)
         self.calendar_frame.place(x = 0, y = 10, width = 900, height = 570)
@@ -433,7 +431,7 @@ class Month(PlannerView):
             day = Label(self.calendar_frame, text = day, width = 20, height = 2, relief = "flat", borderwidth = 0,  bg="white", highlightthickness=0)
             day.place(x = i*120, y = 0)
         day = day_labels.index(current_day[:3])
-                
+
         #prep data 
         num_month = datetime.strptime(current_month, '%B').month
         num_days_prev = calendar.monthcalendar(2023, num_month - 1) if num_month != 1 else calendar.monthcalendar(2022, 12)
@@ -468,7 +466,7 @@ class Month(PlannerView):
                 canvas = tk.Canvas(self.calendar_frame, width = 130, height = 80, bg=bg, borderwidth = 0)
                 canvas.place(x=127*col, y=row_y)
                 #indicate that it's today
-                if num_days_current[row][col] == current_date and current_month == str_current_month and current_year == 2023: 
+                if num_days_current[row][col] == num_current_date and current_month == str_current_month and current_year == 2023: 
                     canvas.create_oval(100, 8, 122, 28, outline="#F87A5F",fill="#F87A5F")
                 canvas.create_text(120, 10, text=str(num_days_current[row][col]), font=("Arial", 15, "bold"), anchor="ne")
                 
@@ -478,7 +476,7 @@ class Month(PlannerView):
                 for i in end: 
                     if (row, col) == i: 
                         num_month = next_month
-                self.display_cellinfo(canvas, num_days_current[row][col], num_month, current_year)                
+                self.display_cellinfo(canvas, num_days_current[row][col], calendar.month_name[num_month], current_year)                
                 canvas.bind("<Button-1>", lambda event, date=num_days_current[row][col], month=num_month, year=current_year: self.on_canvas_click(event, date, month, year))
                 column_x += 105
                 if column_x > 700:
@@ -487,16 +485,18 @@ class Month(PlannerView):
     
     def on_canvas_click(self, event, date, month, year): #display info as messagebox
         print(f"Clicked on {date} {month} {year}")
-        # x, y = event.x, event.y
-        # if 110 <= x <= 130 and 0 <= y <= 30:
-        #     self.return_day_page(date, month, year)
-        #     #self.planner.update_date() #prob: update date not working
-        # else: 
-        #     child_window = PopUpWindow(self)
-        #     child_window.display_table(date, month, year)
+        x, y = event.x, event.y
+        if 110 <= x <= 130 and 0 <= y <= 30:
+            self.return_day_page(date, month, year)
+            # self.planner.update_date() #prob: update date not working
+
+        else: 
+            child_window = PopUpWindow(self)
+            child_window.display_table(date, month, year)
 
     def display_cellinfo(self, canvas, date, month, year): #display info on canvas
         tasks = self.file_handler.get_day_tasks(date, month, year)
+        
         if tasks != None:
             for i, task in enumerate(tasks):
                 note = list(task.values())[0].get('note')
@@ -509,8 +509,8 @@ class Month(PlannerView):
         # self.planner.change_day(date, 11, year)
         # self.planner.call_page("Day")
         pass
+      
     
-        
     def save_data(self): 
         pass
 
@@ -527,7 +527,6 @@ class PopUpWindow(tk.Toplevel):
         table = Table()
         table.display_tasks_table(date, month, year, table_frame)
        
-        
 class Collapsible_list: 
     def create(self, frame, width, datalist, row=None, column=None, x=None, y=None, canType = False):
         data = tk.StringVar()

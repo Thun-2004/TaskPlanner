@@ -156,5 +156,11 @@ num_days_next = calendar.monthcalendar(2023, 12)
 # print(num_days_next)
 
 current_month = calendar.monthcalendar(2024, 1)
-print(current_month)
+# 
 
+# from fileHandling import FileHandling
+from planner_test2 import file_handler
+tasks = file_handler.get_day_tasks(16, "November", 2023)
+data = file_handler.get_data()
+print(tasks)
+print(data)
