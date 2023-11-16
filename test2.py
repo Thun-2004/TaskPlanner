@@ -1,17 +1,32 @@
-class PopUpWindow(tk.Toplevel):
-    def __init__(self, master): 
-        super().__init__(master)
-        self.geometry("400x300")  # Change according to list of data
-        self.popup_window = None  # Initialize popup_window
+import tkinter as tk
 
-    def display_table(self, date, month, year): 
-        self.title(f"Plan for {month} {date}, {year}")
-        table_frame = Frame(self)
-        table_frame.grid(row=0, column=0, rowspan=2, columnspan=2, sticky=tk.W + tk.E)
-        table = Table()
-        table.display_tasks_table(date, month, year, table_frame)
-        Button(table_frame, text="Edit", command=lambda: self.return_day_page(date, month, year), width=10).grid(row=2, column=0)
+class ClickHandler:
+    def __init__(self, root):
+        self.root = root
+        self.click_count = 0
 
-    def return_day_page(self, date, month, year): 
-        if self.popup_window and self.popup_window.winfo_exists():
-            self.popup_window.destroy()
+        self.button = tk.Button(root, text="Click Me", command=self.handle_click)
+        self.button.pack()
+
+        self.button.bind("<Button-1>", self.on_click)
+
+    def on_click(self, event):
+        self.click_count += 1
+
+        # Schedule a function to run after a short delay (e.g., 200 milliseconds)
+        self.root.after(200, self.check_click_count)
+
+    def handle_click(self):
+        if self.click_count == 1:
+            print("Single click")
+        elif self.click_count == 2:
+            print("Double click")
+
+    def check_click_count(self):
+        # Reset click count after a short delay
+        self.click_count = 0
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    click_handler = ClickHandler(root)
+    root.mainloop()
