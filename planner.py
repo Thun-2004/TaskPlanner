@@ -398,7 +398,6 @@ class Week(PlannerView):
         #prep data get current week
         
         self.current_week = self.get_current_week_dates(f"{num_current_date}/{num_current_month}/{num_current_year}")
-    
         self.day_canvas = tk.Canvas(self, width = 900, height = 30, bg="white")
         self.day_canvas.place(x = 0, y = 10)
         self.time_box_frame = Frame(self, bg="#D9D9D9")
