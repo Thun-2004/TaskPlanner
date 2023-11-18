@@ -2,6 +2,8 @@ from config import current_year, current_month, current_date, current_day, categ
 import calendar
 import pickle
 import tkinter as tk
+from tkinter import messagebox
+
 
 #save to self.data first then to file 
 class FileHandling: 
@@ -29,7 +31,7 @@ class FileHandling:
                 pickle.dump(self.data, file)
             
         except FileNotFoundError: 
-            print("File not found")
+            messagebox.showerror("Error", "File not found")
             
     def get_data(self): 
         return self.data
@@ -41,22 +43,21 @@ class FileHandling:
                 self.data = loaded_data
                 return loaded_data
         except FileNotFoundError: 
-            print("File not found")
+            messagebox.showerror("Error", "File not found")
             return []
     
     def get_day_tasks(self, day, month, year): #return list of time slots 
+        self.data = self.load_data("data3.pickle")
         info = self.data
         for i in info:
             if i.get('Year') == year and i.get('Month') == month:
                 for j in i.get('Day'): 
-                    # print(j)
                     if j.get('Date') == day:
                         return j["Time_slot"]
                     
     def get_daytask_ids(self, day, month, year): 
         ids = []
         info = self.data
-        # print(info)
         for i in info:
             if i.get('Year') == year and i.get('Month') == month:
                 for j in i.get('Day'): 
@@ -137,7 +138,6 @@ class FileHandling:
                                         'end' : end_t,
                                         'notify_me' : notify_result
                                     }})
-                        print("Success1")
                         break
                         
                     elif ind == len(i.get('Day')) - 1: #incase no day is found
@@ -156,11 +156,9 @@ class FileHandling:
                                     }
                                 }
                             ]})
-                        print("Success2")
                         break
                     else: 
                         print("failed")
-            #if year is not found
             elif i.get('Year') != year: 
                 data = {
                     'Year': year,
@@ -188,11 +186,10 @@ class FileHandling:
                 break
         try:
             with open(filename, 'wb') as file: 
-                # print(self.data)
                 pickle.dump(self.data, file)
                 print("Success3")
         except FileNotFoundError:   
-            print("Can't save data: File not found")
+            messagebox.showerror("Error", "File not found")
         
     #prepare data for testing
 

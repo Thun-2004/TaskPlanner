@@ -1,4 +1,8 @@
-from datetime import datetime
+try:
+    from datetime import datetime
+except ImportError as e:
+    print(f"Error importing datetime: {e}")
+    datetime = None
 
 pages = ["Day", "Week", "Month"]
    
