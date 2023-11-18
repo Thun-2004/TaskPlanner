@@ -49,7 +49,7 @@ class Planner(tk.Tk):
         self.day_label = Label(self, text = current_day, font = ("Arial", 20), borderwidth = 0)
         self.day_label.place(x = 12, y = 97)
         
-    
+        #Default = Day page
         self.current_page = "Day"
         self.month_page = Month(self)
         self.day_page = Day(self)

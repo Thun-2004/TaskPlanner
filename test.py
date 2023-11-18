@@ -54,7 +54,7 @@ filehandler = FileHandling()
 # filehandler.initialize()
 # filehandler.save_data(2024, "January", 1, "data3.pickle", "Sleep", "None", "Home", "12.00AM", "12.30AM", "Yes")
 info = filehandler.load_data("data3.pickle")
-print(info)
+# print(info)
 # print(filehandler.get_data())
 
 # data = [{'1': {'note': 'Walk', 'category': 'Exercise', 'location': 'Park', 'start': '01.30AM', 'end': '02.30AM', 'notify_me': 'No'}}]
@@ -156,11 +156,18 @@ num_days_next = calendar.monthcalendar(2023, 12)
 # print(num_days_next)
 
 current_month = calendar.monthcalendar(2024, 1)
-# 
 
-# from fileHandling import FileHandling
-from planner_test2 import file_handler
-tasks = file_handler.get_day_tasks(16, "November", 2023)
+from fileHandling import FileHandling
+from planner_test3 import file_handler
+
+tasks = file_handler.get_day_tasks(18, "November", 2023)
 data = file_handler.get_data()
-print(tasks)
-print(data)
+# print(tasks)
+# print(data)
+
+lst = [11, 12, 13]
+# print(lst.index(13))
+
+num_days_current = calendar.monthcalendar(2023, 8)
+count_prev = num_days_current[0].count(0)
+print(num_days_current)
