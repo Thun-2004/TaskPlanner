@@ -171,3 +171,5 @@ lst = [11, 12, 13]
 num_days_current = calendar.monthcalendar(2023, 8)
 count_prev = num_days_current[0].count(0)
 print(num_days_current)
+num_days_current2 = calendar.monthcalendar(2023, 9)
+print(num_days_current2[0])

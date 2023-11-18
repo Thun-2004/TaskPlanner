@@ -636,9 +636,12 @@ class Month(PlannerView):
                 #change month
                 if (row+1)*(col+1) <= count_prev:
                     num_month = prev_month
-                for i in end: 
-                    if (row, col) == i: 
-                        num_month = next_month
+                # for i in end: 
+                #     if (row, col) == i: 
+                #         num_month = next_month
+                next_row, next_col = end[0]
+                if row == next_row and col >= next_col or row > next_row: 
+                    num_month = next_month
                         
                 self.display_cellinfo(canvas, num_days_current[row][col], calendar.month_name[num_month], current_year)                
                 canvas.bind("<Button-1>", lambda event, date=num_days_current[row][col], month=num_month, year=current_year: self.on_canvas_click(event, date, month, year))
@@ -648,7 +651,7 @@ class Month(PlannerView):
                     column_x = 0 
     
     def on_canvas_click(self, event, date, month, year): #display info as messagebox
-        # print(f"Clicked on {date} {month} {year}")
+        print(f"Clicked on {date} {month} {year}")
         str_month = calendar.month_name[month]
         x, y = event.x, event.y
         if 110 <= x <= 130 and 0 <= y <= 30:
@@ -745,7 +748,7 @@ class PopUpWindow(tk.Toplevel):
                 notify = list(task.values())[0].get('notify_me')
                 time_label = tk.Label(info_frame, text=f"Time: {start}-{end}", font=("san-serif", 15))
                 time_label.pack(pady=10, anchor=tk.CENTER)
-
+    
                 note_label = tk.Label(info_frame, text=f"Note: {note}@{location}", font=("san-serif", 15))
                 note_label.pack(pady=10, anchor=tk.CENTER)
 
